@@ -72,7 +72,7 @@ class Measurement:
         for i in self.__windows:
             if i.is_measure:
                 list_.append((i.start,i.end))
-        return list_
+        return deepcopy(list_)
 
     def instantiate(self, parameters: Dict[str, Parameter]):
         if isinstance(self.__offset, ParameterDeclaration):

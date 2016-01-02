@@ -278,10 +278,11 @@ class TablePulseTemplate(PulseTemplate):
                        conditions: Dict[str, Condition],
                        instruction_block: InstructionBlock) -> None:
         instantiated = self.get_entries_instantiated(parameters)
+        measurement = copy.deepcopy(self.__measurement)
         if instantiated:
             if self.__is_measurement_pulse:
-                self.__measurement.measure(instantiated[0].t, instantiated[-1].t)
-            waveform = TableWaveform(tuple(instantiated), self.__measurement.instantiate(parameters))
+                measurement.measure(instantiated[0].t, instantiated[-1].t)
+            waveform = TableWaveform(tuple(instantiated), measurement.instantiate(parameters))
             instruction_block.add_instruction_exec(waveform)
 
     def requires_stop(self, parameters: Dict[str, Parameter], conditions: Dict[str, 'Condition']) -> bool:

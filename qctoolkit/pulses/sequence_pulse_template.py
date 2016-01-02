@@ -104,7 +104,7 @@ class SequencePulseTemplate(PulseTemplate):
     def __map_parameter(self, mapping_function: str, parameters: Dict[str, Parameter]) -> Parameter:
         external_parameters = mapping_function.variables()
         external_values = {name: float(parameters[name]) for name in external_parameters}
-        return mapping_function.evaluate(external_values)
+        return mapping_function.evaluate(**external_values)
 
     def build_sequence(self,
                        sequencer: Sequencer,
