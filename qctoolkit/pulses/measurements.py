@@ -1,5 +1,4 @@
 from typing import NamedTuple, Dict, Union
-from copy import deepcopy
 
 from .instructions import Waveform
 from .parameters import Parameter, ParameterDeclaration
@@ -21,14 +20,14 @@ class Measurement:
             self.sleep(start)
         self.__windows.append(
                 Window(start=start, end=end, parent = self, offset = offset))
-        return deepcopy(self)
+        return (self)
 
     def measure_list(self, list_, end, start = 0):
         offset = self.__get_end_offset()
         for i in list_:
             i.offset = self.__get_end_offset()
             self.__windows.append(i)
-        return deepcopy(self)
+        return (self)
 
     def __get_end_offset(self):
         if len(self.__windows) == 0:
@@ -72,7 +71,7 @@ class Measurement:
         for i in self.__windows:
             if i.is_measure:
                 list_.append((i.start,i.end))
-        return deepcopy(list_)
+        return (list_)
 
     def instantiate(self, parameters: Dict[str, Parameter]):
         if isinstance(self.__offset, ParameterDeclaration):
