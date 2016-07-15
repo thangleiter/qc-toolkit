@@ -7,7 +7,7 @@ Classes:
 """
 
 
-from typing import Any, Dict, List, Set, Optional, Union
+from typing import Any, Dict, Set, Optional, Union
 import numbers
 
 import numpy as np
@@ -16,7 +16,7 @@ from qctoolkit.expressions import Expression
 from qctoolkit.serialization import Serializer
 
 from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter
-from qctoolkit.pulses.pulse_template import AtomicPulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import AtomicPulseTemplate
 from qctoolkit.pulses.sequencing import InstructionBlock, Sequencer
 from qctoolkit.pulses.sequence_pulse_template import ParameterNotProvidedException
 from qctoolkit.pulses.instructions import Waveform
@@ -31,7 +31,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
     two things: one expression that calculates the length of the pulse from the external parameters
     and the time-domain pulse shape itself as a expression. The required external parameters are
     derived from the free variables in the expressions themselves.
-    Like other PulseTemplates the FunctionPulseTemplate can be declared to be a measurement pulse.
 
     The independent variable for the time domain in the expression is expected to be called 't'.
     """
@@ -39,7 +38,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
     def __init__(self,
                  expression: Union[str, Expression],
                  duration_expression: Union[str, Expression],
-                 measurement: bool=False,
                  identifier: str=None) -> None:
         """Create a new FunctionPulseTemplate instance.
 
@@ -50,8 +48,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
             duration_expression (str or Expression): A mathematical expression which reliably
                 computes the duration of an instantiation of this FunctionPulseTemplate from
                 provided parameter values.
-            measurement (bool): True, if this FunctionPulseTemplate shall define a measurement
-                window. (optional, default = False)
             identifier (str): A unique identifier for use in serialization. (optional)
         """
         super().__init__(identifier)
@@ -61,7 +57,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
         self.__duration_expression = duration_expression
         if not isinstance(self.__duration_expression, Expression):
             self.__duration_expression = Expression(self.__duration_expression)
-        self.__is_measurement_pulse = measurement # type: bool
         self.__parameter_names = set(self.__duration_expression.variables()
                                      + self.__expression.variables()) - set(['t'])
 
@@ -72,31 +67,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
     @property
     def parameter_declarations(self) -> Set[ParameterDeclaration]:
         return [ParameterDeclaration(param_name) for param_name in self.parameter_names]
-
-    def get_pulse_length(self, parameters: Dict[str, Parameter]) -> float:
-        """Return the length of this pulse for the given parameters.
-
-        OBSOLETE/FLAWED? Just used in by get_measurement_windows which days are counted.
-
-        Args:
-            parameters (Dict(str -> Parameter)): A mapping of parameter name to parameter objects.
-        """
-        missing_parameters = self.__parameter_names - set(parameters.keys())
-        for missing_parameter in missing_parameters:
-            raise ParameterNotProvidedException(missing_parameter)
-        return self.__duration_expression.evaluate(
-            **{parameter_name: parameter.get_value()
-               for (parameter_name, parameter) in parameters.items()}
-        )
-
-    def get_measurement_windows(self,
-                                parameters: Optional[Dict[str, Parameter]]=None) \
-            -> List[MeasurementWindow]:
-        raise NotImplementedError()
-        if not self.__is_measurement_pulse:
-            return
-        else:
-            return [(0, self.get_pulse_length(parameters))]
 
     @property
     def is_interruptable(self) -> bool:
@@ -129,7 +99,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
         root['parameter_names'] = self.__parameter_names
         root['duration_expression'] = serializer.dictify(self.__duration_expression)
         root['expression'] = serializer.dictify(self.__expression)
-        root['measurement'] = self.__is_measurement_pulse
         return root
 
     @staticmethod
@@ -137,7 +106,6 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
         return FunctionPulseTemplate(
             kwargs['expression'],
             kwargs['duration_expression'],
-            kwargs['Measurement']
         )
 
 

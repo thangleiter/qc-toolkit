@@ -16,8 +16,7 @@ import numpy as np
 from qctoolkit.serialization import Serializer
 from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter, \
     ParameterNotProvidedException
-from qctoolkit.pulses.pulse_template import AtomicPulseTemplate, MeasurementWindow
-from qctoolkit.pulses.sequencing import InstructionBlock, Sequencer
+from qctoolkit.pulses.pulse_template import AtomicPulseTemplate
 from qctoolkit.pulses.interpolation import InterpolationStrategy, LinearInterpolationStrategy, \
     HoldInterpolationStrategy, JumpInterpolationStrategy
 from qctoolkit.pulses.instructions import Waveform
@@ -91,18 +90,14 @@ class TablePulseTemplate(AtomicPulseTemplate):
     table entries.
     TablePulseTemplate provides methods to declare parameters which may be referred to instead of
     using concrete values for both, time and voltage.
-    A TablePulseTemplate may be flagged as representing a measurement pulse, meaning that it defines
-    a measurement window.
 
     Each TablePulseTemplate contains at least an entry at time 0.
     """
 
-    def __init__(self, channels=1, measurement=False, identifier: Optional[str]=None) -> None:
+    def __init__(self, channels=1, identifier: Optional[str]=None) -> None:
         """Create a new TablePulseTemplate.
 
         Args:
-            measurement (bool): True, if this TablePulseTemplate shall define a measurement window.
-                (optional, default = False).
             identifier (str): A unique identifier for use in serialization. (optional)
         """
         super().__init__(identifier)
@@ -116,11 +111,10 @@ class TablePulseTemplate(AtomicPulseTemplate):
             self.__entries.append([TableEntry(0, 0, self.__interpolation_strategies['hold'])])
         self.__time_parameter_declarations = {} # type: Dict[str, ParameterDeclaration]
         self.__voltage_parameter_declarations = {} # type: Dict[str, ParameterDeclaration]
-        self.__is_measurement_pulse = measurement# type: bool
         self.__channels = channels # type: int
 
     @staticmethod
-    def from_array(times: np.ndarray, voltages: np.ndarray, measurement=False) \
+    def from_array(times: np.ndarray, voltages: np.ndarray) \
             -> 'TablePulseTemplate':
         """Static constructor to build a TablePulse from numpy arrays.
 
@@ -133,12 +127,12 @@ class TablePulseTemplate(AtomicPulseTemplate):
             parameters.
         """
         if voltages.ndim == 1:
-            res = TablePulseTemplate(channels=1, measurement=measurement)
+            res = TablePulseTemplate(channels=1)
             for time, voltage in zip(times, voltages):
                 res.add_entry(time, voltage, interpolation='hold')
         elif voltages.ndim == 2:
             channels = voltages.shape[1]
-            res = TablePulseTemplate(channels=channels, measurement=measurement)
+            res = TablePulseTemplate(channels=channels)
             for channel in range(channels):
                 for time, voltage in zip(times, voltages[:, channel]):
                     res.add_entry(time, voltage, interpolation='hold', channel=channel)
@@ -372,17 +366,6 @@ class TablePulseTemplate(AtomicPulseTemplate):
         return set(self.__time_parameter_declarations.values()) | \
                set(self.__voltage_parameter_declarations.values())
 
-    def get_measurement_windows(self,
-                                parameters: Optional[Dict[str, Parameter]]=None) \
-            -> List[MeasurementWindow]: # TODO: remove
-        if not self.__is_measurement_pulse:
-            return []
-        else:
-            # instantiated_entries = self.get_entries_instantiated(parameters)
-            last_entries = [channel[-1].t for channel in self.get_entries_instantiated(parameters)]
-            maxtime = max(last_entries)
-            return [(0, maxtime)]
-
     @property
     def is_interruptable(self) -> bool:
         return False
@@ -485,7 +468,6 @@ class TablePulseTemplate(AtomicPulseTemplate):
 
     def get_serialization_data(self, serializer: Serializer) -> Dict[str, Any]:
         data = dict()
-        data['is_measurement_pulse'] = self.__is_measurement_pulse
         data['time_parameter_declarations'] = \
             [serializer.dictify(self.__time_parameter_declarations[key])
              for key in sorted(self.__time_parameter_declarations.keys())]
@@ -511,7 +493,6 @@ class TablePulseTemplate(AtomicPulseTemplate):
                     time_parameter_declarations: Iterable[Any],
                     voltage_parameter_declarations: Iterable[Any],
                     entries: Iterable[Any],
-                    is_measurement_pulse: bool,
                     identifier: Optional[str]=None) -> 'TablePulseTemplate':
         time_parameter_declarations = \
             {declaration['name']: serializer.deserialize(declaration)
@@ -521,7 +502,6 @@ class TablePulseTemplate(AtomicPulseTemplate):
              for declaration in voltage_parameter_declarations}
 
         template = TablePulseTemplate(channels=len(entries),
-                                      measurement=is_measurement_pulse,
                                       identifier=identifier)
 
         for channel, channel_entries in enumerate(entries):

@@ -7,7 +7,7 @@ from typing import Dict, Set, Optional, Any
 from qctoolkit.serialization import Serializer
 
 from qctoolkit.pulses.parameters import Parameter
-from qctoolkit.pulses.pulse_template import PulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import PulseTemplate
 from qctoolkit.pulses.conditions import Condition, ConditionMissingException
 from qctoolkit.pulses.instructions import InstructionBlock
 from qctoolkit.pulses.sequencing import Sequencer
@@ -52,9 +52,6 @@ class LoopPulseTemplate(PulseTemplate):
     @property
     def parameter_names(self) -> Set[str]:
         return self.__body.parameter_names
-
-    def get_measurement_windows(self, parameters: Dict[str, Parameter]=None) -> MeasurementWindow:
-        raise NotImplementedError()
 
     @property
     def parameter_declarations(self) -> Set[str]:

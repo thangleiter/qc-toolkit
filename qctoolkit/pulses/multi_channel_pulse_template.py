@@ -222,10 +222,6 @@ class MultiChannelPulseTemplate(AtomicPulseTemplate):
         # TODO: min, max, default values not mapped (required?)
         return {ParameterDeclaration(parameter_name) for parameter_name in self.parameter_names}
 
-    def get_measurement_windows(self, parameters: Dict[str, Parameter] = None) \
-            -> List['MeasurementWindow']:
-        raise NotImplementedError()
-
     @property
     def is_interruptable(self) -> bool:
         return all(t.is_interruptable for t, _ in self.__subtemplates)

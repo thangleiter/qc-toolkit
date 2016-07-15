@@ -7,17 +7,14 @@ Classes:
         directly translated into a waveform.
 """
 from abc import ABCMeta, abstractmethod, abstractproperty
-from typing import Dict, List, Tuple, Set, Optional
+from typing import Dict, Set, Optional
 
 from qctoolkit.serialization import Serializable
 
 from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter
 from qctoolkit.pulses.sequencing import SequencingElement, InstructionBlock
 
-__all__ = ["MeasurementWindow", "PulseTemplate", "AtomicPulseTemplate"]
-
-
-MeasurementWindow = Tuple[float, float]
+__all__ = ["PulseTemplate", "AtomicPulseTemplate"]
 
 
 class PulseTemplate(Serializable, SequencingElement, metaclass=ABCMeta):
@@ -43,16 +40,6 @@ class PulseTemplate(Serializable, SequencingElement, metaclass=ABCMeta):
         """The set of ParameterDeclaration objects detailing all parameters required to instantiate
         this PulseTemplate.
         """
-
-    @abstractmethod
-    def get_measurement_windows(self, parameters: Dict[str, Parameter]=None) \
-            -> List[MeasurementWindow]:
-        """
-        FLAWED / OBSOLETE: should be fixed already in a different branch and will be merged soon
-
-        Returns:
-             All measurement windows defined in this PulseTemplate.
-         """
 
     @abstractproperty
     def is_interruptable(self) -> bool:

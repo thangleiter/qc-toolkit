@@ -82,7 +82,7 @@ class SequencePulseTemplateSerializationTests(unittest.TestCase):
         self.table_foo.add_entry('hugo', 2)
         self.table_foo.add_entry(ParameterDeclaration('albert', max=9.1), 'voltage')
 
-        self.table = TablePulseTemplate(measurement=True)
+        self.table = TablePulseTemplate()
         self.foo_mappings = dict(hugo='ilse', albert='albert', voltage='voltage')
 
     def test_get_serialization_data(self) -> None:

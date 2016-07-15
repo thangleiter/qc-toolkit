@@ -6,7 +6,7 @@ from qctoolkit.serialization import Serializer
 from qctoolkit.pulses.instructions import Waveform
 from qctoolkit.pulses.conditions import Condition
 from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter
-from qctoolkit.pulses.pulse_template import AtomicPulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import AtomicPulseTemplate
 
 
 __all__ = ['MeasurementPulseTemplate']
@@ -55,10 +55,6 @@ class MeasurementPulseTemplate(AtomicPulseTemplate):
     @property
     def parameter_declarations(self) -> Set[ParameterDeclaration]:
         return self.__inner_template.parameter_declarations
-
-    def get_measurement_windows(self, parameters: Dict[str, Parameter] = None) \
-            -> List[MeasurementWindow]:
-        raise NotImplementedError()
 
     def build_waveform(self, parameters: Dict[str, Parameter]) -> Optional[Waveform]:
         return self.__inner_template.build_waveform(parameters)

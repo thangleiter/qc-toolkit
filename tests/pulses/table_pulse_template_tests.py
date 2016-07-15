@@ -37,29 +37,6 @@ class TablePulseTemplateTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             table.add_entry(1,2, "bar")
 
-    def test_measurement_windows(self) -> None:
-        pulse = TablePulseTemplate(measurement=True)
-        pulse.add_entry(1, 1)
-        pulse.add_entry(3, 0)
-        pulse.add_entry(5, 0)
-        windows = pulse.get_measurement_windows()
-        self.assertEqual([(0,5)], windows)
-
-    def test_no_measurement_windows(self) -> None:
-        pulse = TablePulseTemplate(measurement=False)
-        pulse.add_entry(1, 1)
-        pulse.add_entry(3, 0)
-        pulse.add_entry(5, 0)
-        windows = pulse.get_measurement_windows()
-        self.assertEqual([], windows)
-
-    def test_measurement_windows_with_parameters(self) -> None:
-        pulse = TablePulseTemplate(measurement=True)
-        pulse.add_entry('length', 0)
-        parameters = dict(length=100)
-        windows = pulse.get_measurement_windows(parameters)
-        self.assertEqual(windows, [(0, 100)])
-
     def test_add_entry_empty_time_is_negative(self) -> None:
         table = TablePulseTemplate()
         with self.assertRaises(ValueError):
@@ -595,31 +572,18 @@ class TablePulseTemplateTest(unittest.TestCase):
 
         self.assertEqual(expected, entries)
 
-    def test_measurement_windows_multi(self) -> None:
-        pulse = TablePulseTemplate(measurement=True, channels=2)
-        pulse.add_entry(1, 1)
-        pulse.add_entry(3, 0)
-        pulse.add_entry(5, 0)
-
-        pulse.add_entry(1, 1, channel=1)
-        pulse.add_entry(3, 0, channel=1)
-        pulse.add_entry(10, 0, channel=1)
-        windows = pulse.get_measurement_windows()
-        self.assertEqual([(0,10)], windows)
-
 
 class TablePulseTemplateSerializationTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.serializer = DummySerializer(lambda x: dict(name=x.name), lambda x: x.name, lambda x: x['name'])
-        self.template = TablePulseTemplate(measurement=True, identifier='foo')
+        self.template = TablePulseTemplate(identifier='foo')
         self.expected_data = dict(type=self.serializer.get_type_identifier(self.template))
 
     def test_get_serialization_data(self) -> None:
         self.template.add_entry('foo', 2)
         self.template.add_entry('hugo', 'ilse', interpolation='linear')
 
-        self.expected_data['is_measurement_pulse'] = True
         self.expected_data['time_parameter_declarations'] = [dict(name='foo'), dict(name='hugo')]
         self.expected_data['voltage_parameter_declarations'] = [dict(name='ilse')]
         self.expected_data['entries'] = [[(0, 0, 'hold'), ('foo', 2, 'hold'), ('hugo', 'ilse', 'linear')]]
@@ -627,8 +591,7 @@ class TablePulseTemplateSerializationTests(unittest.TestCase):
         self.assertEqual(self.expected_data, data)
 
     def test_deserialize(self) -> None:
-        data = dict(is_measurement_pulse=True,
-                    time_parameter_declarations=[dict(name='hugo'), dict(name='foo')],
+        data = dict(time_parameter_declarations=[dict(name='hugo'), dict(name='foo')],
                     voltage_parameter_declarations=[dict(name='ilse')],
                     entries=[[(0, 0, 'hold'), ('foo', 2, 'hold'), ('hugo', 'ilse', 'linear')]],
                     identifier='foo')

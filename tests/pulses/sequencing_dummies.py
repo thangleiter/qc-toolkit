@@ -8,7 +8,7 @@ from qctoolkit.serialization import Serializer
 from qctoolkit.pulses.instructions import Waveform, Instruction, CJMPInstruction, GOTOInstruction, REPJInstruction
 from qctoolkit.pulses.sequencing import Sequencer, InstructionBlock, SequencingElement
 from qctoolkit.pulses.parameters import Parameter, ParameterDeclaration
-from qctoolkit.pulses.pulse_template import AtomicPulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import AtomicPulseTemplate
 from qctoolkit.pulses.interpolation import InterpolationStrategy
 from qctoolkit.pulses.conditions import Condition
 
@@ -253,10 +253,6 @@ class DummyPulseTemplate(AtomicPulseTemplate):
     @property
     def parameter_declarations(self) -> Set[str]:
         return [ParameterDeclaration(name) for name in self.parameter_names]
-
-    def get_measurement_windows(self, parameters: Dict[str, Parameter] = None) -> List[MeasurementWindow]:
-        """Return all measurement windows defined in this PulseTemplate."""
-        raise NotImplementedError()
 
     @property
     def is_interruptable(self) -> bool:

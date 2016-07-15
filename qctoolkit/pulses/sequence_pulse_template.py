@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Set, Optional, Any, Iterable, Union
 
 from qctoolkit.serialization import Serializer
 
-from qctoolkit.pulses.pulse_template import PulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import PulseTemplate
 from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter, \
     ParameterNotProvidedException
 from qctoolkit.pulses.sequencing import InstructionBlock, Sequencer
@@ -100,11 +100,6 @@ class SequencePulseTemplate(PulseTemplate):
     def subtemplates(self) -> List[Subtemplate]:
         return [(template, self.__parameter_mapping.get_template_map(template))
                 for template in self.__subtemplates]
-
-    def get_measurement_windows(self,
-                                parameters: Dict[str, Parameter]=None
-                                ) -> List[MeasurementWindow]:
-        raise NotImplementedError() # will be computed by Sequencer
 
     @property
     def is_interruptable(self) -> bool:

@@ -18,8 +18,6 @@ class FunctionPulseTest(unittest.TestCase):
         self.pars = dict(a=ConstantParameter(1), b=ConstantParameter(2), c=ConstantParameter(3))
         self.fpt = FunctionPulseTemplate(self.s, self.s2)
 
-    def test_get_pulse_length(self):
-        self.assertEqual(self.fpt.get_pulse_length(self.pars), 3)
 
 #    def test_get_measurement_windows(self):
 #        self.assertEqual(self.fpt.get_measurement_windows(self.pars), None)
@@ -31,8 +29,7 @@ class FunctionPulseTest(unittest.TestCase):
         expected_data = dict(type='FunctionPulseTemplate',
                              parameter_names=set(['a', 'b', 'c']),
                              duration_expression=str(self.s2),
-                             expression=str(self.s),
-                             measurement=False)
+                             expression=str(self.s))
         self.assertEqual(expected_data, self.fpt.get_serialization_data(DummySerializer(serialize_callback=lambda x: str(x))))
 
 

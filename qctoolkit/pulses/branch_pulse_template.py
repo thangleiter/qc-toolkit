@@ -4,7 +4,7 @@ conditionally executes one out of two possible PulseTemplates."""
 from typing import Dict, Set, List, Optional, Any
 
 from qctoolkit.pulses.parameters import Parameter
-from qctoolkit.pulses.pulse_template import PulseTemplate, MeasurementWindow
+from qctoolkit.pulses.pulse_template import PulseTemplate
 from qctoolkit.pulses.conditions import Condition, ConditionMissingException
 from qctoolkit.pulses.sequencing import Sequencer, InstructionBlock
 
@@ -57,10 +57,6 @@ class BranchPulseTemplate(PulseTemplate):
 
     @property
     def parameter_declarations(self) -> Set[str]:
-        raise NotImplementedError()
-
-    def get_measurement_windows(self, parameters: Dict[str, Parameter]=None) \
-            -> List[MeasurementWindow]:
         raise NotImplementedError()
 
     @property
