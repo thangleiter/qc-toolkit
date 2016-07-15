@@ -1,6 +1,8 @@
 """This module defines the class MeasurementPulse."""
 
-from typing import Optional, Set, Dict, List, Any
+from typing import Optional, Set, Dict, Any
+
+import numpy
 
 from qctoolkit.serialization import Serializer
 from qctoolkit.pulses.instructions import Waveform
@@ -9,13 +11,13 @@ from qctoolkit.pulses.parameters import ParameterDeclaration, Parameter
 from qctoolkit.pulses.pulse_template import AtomicPulseTemplate
 
 
-__all__ = ['MeasurementPulseTemplate']
+__all__ = ['MeasurementPulseTemplate', 'MeasurementWaveform']
 
 
 class MeasurementPulseTemplate(AtomicPulseTemplate):
     """Declares an AtomicPulseTemplate to be measurable.
 
-    MeasurementPulseTemplate is a decorator that turn any AtomicPulseTemplate into a measureable one
+    MeasurementPulseTemplate is a decorator that turn any AtomicPulseTemplate into a measurable one
     by adding information required for the measurement such as how the measured data should be
     treated (left as raw measurement input or processed, e.g., average, min/max).
 
@@ -57,7 +59,8 @@ class MeasurementPulseTemplate(AtomicPulseTemplate):
         return self.__inner_template.parameter_declarations
 
     def build_waveform(self, parameters: Dict[str, Parameter]) -> Optional[Waveform]:
-        return self.__inner_template.build_waveform(parameters)
+        return MeasurementWaveform(self.__inner_template.build_waveform(parameters),
+                                   self.__measurement_type)
 
     def requires_stop(self,
                       parameters: Dict[str, Parameter],
@@ -70,3 +73,30 @@ class MeasurementPulseTemplate(AtomicPulseTemplate):
     @staticmethod
     def deserialize(serializer: Serializer, **kwargs) -> 'MeasurementPulseTemplate':
         raise NotImplementedError()
+
+
+class MeasurementWaveform(Waveform):
+
+    def __init__(self, inner_waveform: Waveform, measurement_type: str) -> None:
+        super().__init__()
+        self.__inner_waveform = inner_waveform
+        self.__measurement_type = measurement_type
+
+    @property
+    def measurement_type(self) -> str:
+        return self.__measurement_type
+
+    @property
+    def compare_key(self) -> Any:
+        return self.__inner_waveform, self.__measurement_type
+
+    @property
+    def duration(self) -> float:
+        return self.__inner_waveform.duration
+
+    @property
+    def num_channels(self) -> int:
+        return self.__inner_waveform.num_channels
+
+    def sample(self, sample_times: numpy.ndarray, first_offset: float=0) -> numpy.ndarray:
+        return self.__inner_waveform.sample(sample_times, first_offset)
