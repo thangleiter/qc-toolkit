@@ -94,10 +94,11 @@ class TablePulseTemplate(AtomicPulseTemplate):
     Each TablePulseTemplate contains at least an entry at time 0.
     """
 
-    def __init__(self, channels=1, identifier: Optional[str]=None) -> None:
+    def __init__(self, channels: int=1, identifier: Optional[str]=None) -> None:
         """Create a new TablePulseTemplate.
 
         Args:
+            channels (int): The number of channels defined in this TablePulseTemplate (default = 1).
             identifier (str): A unique identifier for use in serialization. (optional)
         """
         super().__init__(identifier)
