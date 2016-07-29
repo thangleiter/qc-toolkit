@@ -65,7 +65,7 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
 
     @property
     def parameter_declarations(self) -> Set[ParameterDeclaration]:
-        return [ParameterDeclaration(param_name) for param_name in self.parameter_names]
+        return {ParameterDeclaration(param_name) for param_name in self.parameter_names}
 
     @property
     def is_interruptable(self) -> bool:
@@ -88,23 +88,24 @@ class FunctionPulseTemplate(AtomicPulseTemplate):
                       conditions: Dict[str, 'Condition']) -> bool:
         return any(
             parameters[name].requires_stop
-            for name in parameters.keys()
-            if (name in self.parameter_names) and not isinstance(parameters[name], numbers.Number)
+            for name in parameters.keys() if (name in self.parameter_names)
         )
 
     def get_serialization_data(self, serializer: Serializer) -> None:
-        root = dict()
-        root['type'] = 'FunctionPulseTemplate'
-        root['parameter_names'] = self.__parameter_names
-        root['duration_expression'] = serializer.dictify(self.__duration_expression)
-        root['expression'] = serializer.dictify(self.__expression)
-        return root
+        return dict(
+            duration_expression=serializer.dictify(self.__duration_expression),
+            expression=serializer.dictify(self.__expression)
+        )
 
     @staticmethod
-    def deserialize(serializer: 'Serializer', **kwargs) -> 'Serializable':
+    def deserialize(serializer: 'Serializer',
+                    expression: str,
+                    duration_expression: str,
+                    identifier: Optional[bool]=None) -> 'FunctionPulseTemplate':
         return FunctionPulseTemplate(
-            kwargs['expression'],
-            kwargs['duration_expression'],
+            serializer.deserialize(expression),
+            serializer.deserialize(duration_expression),
+            identifier=identifier
         )
 
 
@@ -141,7 +142,7 @@ class FunctionWaveform(Waveform):
     
     @property
     def compare_key(self) -> Any:
-        return self.__expression
+        return self.__expression, self.__duration, self.__parameters
 
     @property
     def duration(self) -> float:

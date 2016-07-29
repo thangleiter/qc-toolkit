@@ -252,7 +252,7 @@ class DummyPulseTemplate(AtomicPulseTemplate):
 
     @property
     def parameter_declarations(self) -> Set[str]:
-        return [ParameterDeclaration(name) for name in self.parameter_names]
+        return {ParameterDeclaration(name) for name in self.parameter_names}
 
     @property
     def is_interruptable(self) -> bool:
